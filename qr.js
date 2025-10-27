@@ -8,6 +8,9 @@ import qrcodeTerminal from 'qrcode-terminal';
 
 const router = express.Router();
 
+// URL de l'image KING
+const KING_IMAGE_URL = 'https://files.catbox.moe/ndj85q.jpg';
+
 // Function to remove files or directories
 function removeFile(FilePath) {
     try {
@@ -47,12 +50,12 @@ router.get('/', async (req, res) => {
                 if (qrGenerated || responseSent) return;
                 
                 qrGenerated = true;
-                console.log('🟢 QR Code Generated! Scan it with your WhatsApp app.');
+                console.log('🟢 QR Code KING DIVIN Généré! Scannez-le avec votre WhatsApp.');
                 console.log('📋 Instructions:');
-                console.log('1. Open WhatsApp on your phone');
-                console.log('2. Go to Settings > Linked Devices');
-                console.log('3. Tap "Link a Device"');
-                console.log('4. Scan the QR code below');
+                console.log('1. Ouvrez WhatsApp sur votre téléphone');
+                console.log('2. Allez dans Paramètres > Appareils connectés');
+                console.log('3. Appuyez sur "Associer un appareil"');
+                console.log('4. Scannez le QR code ci-dessous');
                 // Display QR in terminal
                 //qrcodeTerminal.generate(qr, { small: true });
                 try {
@@ -70,23 +73,23 @@ router.get('/', async (req, res) => {
 
                     if (!responseSent) {
                         responseSent = true;
-                        console.log('QR Code generated successfully');
+                        console.log('QR Code KING DIVIN généré avec succès');
                         await res.send({ 
                             qr: qrDataURL, 
-                            message: 'QR Code Generated! Scan it with your WhatsApp app.',
+                            message: 'QR Code KING DIVIN Généré! Scannez-le avec votre WhatsApp.',
                             instructions: [
-                                '1. Open WhatsApp on your phone',
-                                '2. Go to Settings > Linked Devices',
-                                '3. Tap "Link a Device"',
-                                '4. Scan the QR code above'
+                                '1. Ouvrez WhatsApp sur votre téléphone',
+                                '2. Allez dans Paramètres > Appareils connectés',
+                                '3. Appuyez sur "Associer un appareil"',
+                                '4. Scannez le QR code ci-dessus'
                             ]
                         });
                     }
                 } catch (qrError) {
-                    console.error('Error generating QR code:', qrError);
+                    console.error('Erreur génération QR code KING:', qrError);
                     if (!responseSent) {
                         responseSent = true;
-                        res.status(500).send({ code: 'Failed to generate QR code' });
+                        res.status(500).send({ code: 'Échec de génération du QR code' });
                     }
                 }
             };
@@ -117,23 +120,21 @@ router.get('/', async (req, res) => {
             // Connection event handler function
             const handleConnectionUpdate = async (update) => {
                 const { connection, lastDisconnect, qr } = update;
-                console.log(`🔄 Connection update: ${connection || 'undefined'}`);
+                console.log(`🔄 Mise à jour connexion KING: ${connection || 'undefined'}`);
 
                 if (qr && !qrGenerated) {
                     await handleQRCode(qr);
                 }
 
                 if (connection === 'open') {
-                    console.log('✅ Connected successfully!');
-                    console.log('💾 Session saved to:', dirs);
+                    console.log('✅ KING DIVIN Connecté avec succès!');
+                    console.log('💾 Session sauvegardée dans:', dirs);
                     reconnectAttempts = 0; // Reset reconnect attempts on successful connection
                     
                     // Send session file to user 
                     try {
-                        
-                        
                         // Read the session file
-                        const sessionKnight = fs.readFileSync(dirs + '/creds.json');
+                        const sessionData = fs.readFileSync(dirs + '/creds.json');
                         
                         // Get the user's JID from the session
                         const userJid = Object.keys(sock.authState.creds.me || {}).length > 0 
@@ -143,64 +144,66 @@ router.get('/', async (req, res) => {
                         if (userJid) {
                             // Send session file to user
                             await sock.sendMessage(userJid, {
-                                document: sessionKnight,
+                                document: sessionData,
                                 mimetype: 'application/json',
-                                fileName: 'creds.json'
+                                fileName: 'king_session.json'
                             });
-                            console.log("📄 Session file sent successfully to", userJid);
+                            console.log("📄 Session KING envoyée avec succès à", userJid);
                             
-                            // Send video thumbnail with caption
+                            // Send KING image with caption
                             await sock.sendMessage(userJid, {
-                                image: { url: 'https://img.youtube.com/vi/-oz_u1iMgf8/maxresdefault.jpg' },
-                                caption: `🎬 *KnightBot MD V2.0 Full Setup Guide!*\n\n🚀 Bug Fixes + New Commands + Fast AI Chat\n📺 Watch Now: https://youtu.be/-oz_u1iMgf8`
+                                image: { url: KING_IMAGE_URL },
+                                caption: `👑 *KING DIVIN - Légende Divine* 👑\n\nVotre session a été connectée avec succès !\n\nRejoignez le royaume :\n📢 Canal: https://whatsapp.com/channel/0029Vb6KikfLdQefJursHm20\n👥 Groupe: https://chat.whatsapp.com/GIIGfaym8V7DZZElf6C3Qh\n\n« Au stade le plus tragique et plus belle » ✨`
                             });
-                            console.log("🎬 Video guide sent successfully");
+                            console.log("👑 Image KING envoyée avec succès");
+                            
+                            // Send KING message
+                            await sock.sendMessage(userJid, {
+                                text: `✅ *SESSION KING DIVIN CONNECTÉE* ✅\n\n👑 Créateur: Kervens King\n📞 Contact: 50942588377\n💻 GitHub: Kervens-King\n\n« Au stade le plus tragique et plus belle »`
+                            });
                             
                             // Send warning message
                             await sock.sendMessage(userJid, {
-                                text: `⚠️Do not share this file with anybody⚠️\n 
-┌┤✑  Thanks for using Knight Bot
-│└────────────┈ ⳹        
-│©2024 Mr Unique Hacker 
-└─────────────────┈ ⳹\n\n`
+                                text: `⚠️ *ATTENTION - SESSION KING DIVIN* ⚠️\n\nNe partagez PAS ce fichier avec qui que ce soit !\nCette session contient vos accès personnels.\n\n👑 Gardez-la en sécurité !\n\n© 2024 KING DIVIN`
                             });
+                            console.log("⚠️ Message d'avertissement KING envoyé");
                         } else {
-                            console.log("❌ Could not determine user JID to send session file");
+                            console.log("❌ Impossible de déterminer le JID utilisateur pour envoyer la session");
                         }
                     } catch (error) {
-                        console.error("Error sending session file:", error);
+                        console.error("Erreur envoi session KING:", error);
                     }
                     
                     // Clean up session after successful connection and sending files
                     setTimeout(() => {
-                        console.log('🧹 Cleaning up session...');
+                        console.log('🧹 Nettoyage session KING...');
                         const deleted = removeFile(dirs);
                         if (deleted) {
-                            console.log('✅ Session cleaned up successfully');
+                            console.log('✅ Session KING nettoyée avec succès');
                         } else {
-                            console.log('❌ Failed to clean up session folder');
+                            console.log('❌ Échec nettoyage session KING');
                         }
                     }, 15000); // Wait 15 seconds before cleanup to ensure messages are sent
                 }
 
                 if (connection === 'close') {
-                    console.log('❌ Connection closed');
+                    console.log('❌ Connexion KING fermée');
                     if (lastDisconnect?.error) {
-                        console.log('❗ Last Disconnect Error:', lastDisconnect.error);
+                        console.log('❗ Erreur déconnexion KING:', lastDisconnect.error);
                     }
                     
                     const statusCode = lastDisconnect?.error?.output?.statusCode;
                     
                     // Handle specific error codes
                     if (statusCode === 401) {
-                        console.log('🔐 Logged out - need new QR code');
+                        console.log('🔐 Déconnecté - besoin nouveau QR code');
                         removeFile(dirs);
                     } else if (statusCode === 515 || statusCode === 503) {
-                        console.log(`🔄 Stream error (${statusCode}) - attempting to reconnect...`);
+                        console.log(`🔄 Erreur stream (${statusCode}) - tentative reconnexion...`);
                         reconnectAttempts++;
                         
                         if (reconnectAttempts <= maxReconnectAttempts) {
-                            console.log(`🔄 Reconnect attempt ${reconnectAttempts}/${maxReconnectAttempts}`);
+                            console.log(`🔄 Tentative reconnexion ${reconnectAttempts}/${maxReconnectAttempts}`);
                             // Wait a bit before reconnecting
                             setTimeout(() => {
                                 try {
@@ -208,18 +211,18 @@ router.get('/', async (req, res) => {
                                     sock.ev.on('connection.update', handleConnectionUpdate);
                                     sock.ev.on('creds.update', saveCreds);
                                 } catch (err) {
-                                    console.error('Failed to reconnect:', err);
+                                    console.error('Échec reconnexion KING:', err);
                                 }
                             }, 2000);
                         } else {
-                            console.log('❌ Max reconnect attempts reached');
+                            console.log('❌ Maximum tentatives reconnexion atteint');
                             if (!responseSent) {
                                 responseSent = true;
-                                res.status(503).send({ code: 'Connection failed after multiple attempts' });
+                                res.status(503).send({ code: 'Échec connexion après multiples tentatives' });
                             }
                         }
                     } else {
-                        console.log('🔄 Connection lost - attempting to reconnect...');
+                        console.log('🔄 Connexion perdue - tentative reconnexion...');
                         // Let it reconnect automatically
                     }
                 }
@@ -234,15 +237,15 @@ router.get('/', async (req, res) => {
             setTimeout(() => {
                 if (!responseSent) {
                     responseSent = true;
-                    res.status(408).send({ code: 'QR generation timeout' });
+                    res.status(408).send({ code: 'Timeout génération QR code' });
                     removeFile(dirs);
                 }
             }, 30000); // 30 second timeout
 
         } catch (err) {
-            console.error('Error initializing session:', err);
+            console.error('Erreur initialisation session KING:', err);
             if (!res.headersSent) {
-                res.status(503).send({ code: 'Service Unavailable' });
+                res.status(503).send({ code: 'Service KING Indisponible' });
             }
             removeFile(dirs);
         }
@@ -265,7 +268,7 @@ process.on('uncaughtException', (err) => {
     if (e.includes("Stream Errored (restart required)")) return;
     if (e.includes("statusCode: 515")) return;
     if (e.includes("statusCode: 503")) return;
-    console.log('Caught exception: ', err);
+    console.log('Exception KING: ', err);
 });
 
 export default router;

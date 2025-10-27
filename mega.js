@@ -1,52 +1,52 @@
 import * as mega from 'megajs';
 
-// Mega authentication credentials
+// Identifiants d'authentification Mega
 const auth = {
-    email: 'abc@gmail.com', // Replace with your Mega email
-    password: 'abc@1234!', // Replace with your Mega password
+    email: 'abc@gmail.com', // Remplacez par votre email Mega
+    password: 'abc@1234!', // Remplacez par votre mot de passe Mega
     userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Safari/537.36 Edge/12.246'
 };
 
-// Function to upload a file to Mega and return the URL
+// Fonction pour uploader un fichier vers Mega et retourner l'URL
 export const upload = (data, name) => {
     return new Promise((resolve, reject) => {
         try {
-            // Authenticate with Mega storage
+            // Authentification avec le stockage Mega
             const storage = new mega.Storage(auth, () => {
-                // Upload the data stream (e.g., file stream) to Mega
+                // Upload du flux de données (ex: flux de fichier) vers Mega
                 const uploadStream = storage.upload({ name: name, allowUploadBuffering: true });
 
-                // Pipe the data into Mega
+                // Diriger les données vers Mega
                 data.pipe(uploadStream);
 
-                // When the file is successfully uploaded, resolve with the file's URL
+                // Quand le fichier est uploadé avec succès, résoudre avec l'URL du fichier
                 storage.on("add", (file) => {
                     file.link((err, url) => {
                         if (err) {
-                            reject(err); // Reject if there's an error getting the link
+                            reject(err); // Rejeter en cas d'erreur pour obtenir le lien
                         } else {
-                            storage.close(); // Close the storage session once the file is uploaded
-                            resolve(url); // Return the file's link
+                            storage.close(); // Fermer la session de stockage une fois le fichier uploadé
+                            resolve(url); // Retourner le lien du fichier
                         }
                     });
                 });
 
-                // Handle errors during file upload process
+                // Gérer les erreurs pendant le processus d'upload
                 storage.on("error", (error) => {
                     reject(error);
                 });
             });
         } catch (err) {
-            reject(err); // Reject if any error occurs during the upload process
+            reject(err); // Rejeter si une erreur survient pendant le processus d'upload
         }
     });
 };
 
-// Function to download a file from Mega using a URL
+// Fonction pour télécharger un fichier depuis Mega en utilisant une URL
 export const download = (url) => {
     return new Promise((resolve, reject) => {
         try {
-            // Get file from Mega using the URL
+            // Obtenir le fichier depuis Mega en utilisant l'URL
             const file = mega.File.fromURL(url);
 
             file.loadAttributes((err) => {
@@ -55,12 +55,12 @@ export const download = (url) => {
                     return;
                 }
 
-                // Download the file buffer
+                // Télécharger le buffer du fichier
                 file.downloadBuffer((err, buffer) => {
                     if (err) {
                         reject(err);
                     } else {
-                        resolve(buffer); // Return the file buffer
+                        resolve(buffer); // Retourner le buffer du fichier
                     }
                 });
             });
@@ -69,4 +69,3 @@ export const download = (url) => {
         }
     });
 };
-

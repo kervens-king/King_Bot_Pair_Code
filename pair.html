@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Knight Bot - WhatsApp Linker</title>
+  <title>KING DIVIN - Connexion WhatsApp</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"/>
   <style>
     :root {
@@ -323,21 +323,21 @@
 <body>
   <div class="container">
     <div class="header">
-      <div class="logo"><i class="fas fa-robot"></i></div>
-      <h1 class="title">Knight Bot</h1>
-      <p class="subtitle">Link your WhatsApp device</p>
+      <div class="logo"><i class="fas fa-crown"></i></div>
+      <h1 class="title">KING DIVIN</h1>
+      <p class="subtitle">Connexion WhatsApp - Légende Divine</p>
       <div class="social-icons">
-        <a href="https://www.youtube.com/@mr_unique_hacker?sub_confirmation=1" target="_blank" class="youtube"><i class="fab fa-youtube"></i></a>
-        <a href="https://t.me/+hxojkc7kaVViYzdl" target="_blank" class="telegram"><i class="fab fa-telegram-plane"></i></a>
-        <a href="https://whatsapp.com/channel/0029Va90zAnIHphOuO8Msp3A" target="_blank" class="whatsapp"><i class="fab fa-whatsapp"></i></a>
-        <a href="https://github.com/mruniquehacker/Knightbot-md" target="_blank" class="github"><i class="fab fa-github"></i></a>
+        <a href="https://www.youtube.com/@KervensKing" target="_blank" class="youtube"><i class="fab fa-youtube"></i></a>
+        <a href="https://t.me/KervensKing" target="_blank" class="telegram"><i class="fab fa-telegram-plane"></i></a>
+        <a href="https://whatsapp.com/channel/0029Vb6KikfLdQefJursHm20" target="_blank" class="whatsapp"><i class="fab fa-whatsapp"></i></a>
+        <a href="https://github.com/Kervens-King" target="_blank" class="github"><i class="fab fa-github"></i></a>
       </div>
     </div>
 
     <!-- Toggle Switch -->
     <div class="toggle-container">
       <div class="toggle-option active" data-mode="pair">
-        <i class="fas fa-key"></i> Pair Code
+        <i class="fas fa-key"></i> Code Pair
       </div>
       <div class="toggle-option" data-mode="qr">
         <i class="fas fa-qrcode"></i> QR Code
@@ -345,12 +345,12 @@
     </div>
 
     <div class="input-group" id="inputGroup">
-      <label class="input-label">Enter your WhatsApp number with country code</label>
-      <input type="text" id="mobileNumber" class="input-field" placeholder="+917023951514" pattern="[+][0-9]{10,}" title="Please enter country code starting with + followed by number">
+      <label class="input-label">Entrez votre numéro WhatsApp avec l'indicatif pays</label>
+      <input type="text" id="mobileNumber" class="input-field" placeholder="50942588377" pattern="[0-9]{10,}" title="Veuillez entrer votre numéro sans le signe +">
     </div>
 
     <button class="generate-btn" id="submit">
-      <i class="fas fa-key"></i> Generate Pair Code
+      <i class="fas fa-key"></i> Générer le Code Pair
     </button>
 
     <div class="loading" id="loading">
@@ -358,22 +358,23 @@
     </div>
 
     <div class="code-display" id="codeDisplay">
-      Your pair code will appear here
+      Votre code pair apparaîtra ici
     </div>
 
     <div class="qr-display" id="qrDisplay">
       <img id="qrImage" class="qr-image" src="" alt="QR Code">
       <div class="qr-instructions" id="qrInstructions">
-        Scan this QR code with your WhatsApp app
+        Scannez ce QR code avec votre application WhatsApp
       </div>
     </div>
 
     <button class="copy-btn" id="copy" onclick="copyCode()">
-      <i class="fas fa-copy"></i> Copy Code
+      <i class="fas fa-copy"></i> Copier le Code
     </button>
 
     <div class="footer">
-      <p>© 2025 Mr Unique Hacker | Knight Bot</p>
+      <p>© 2024 Kervens King | KING DIVIN</p>
+      <p style="margin-top: 5px; font-style: italic;">« Au stade le plus tragique et plus belle »</p>
     </div>
   </div>
 
@@ -399,7 +400,7 @@
         const inputGroup = document.getElementById('inputGroup');
         
         if (mode === 'pair') {
-          submitBtn.innerHTML = '<i class="fas fa-key"></i> Generate Pair Code';
+          submitBtn.innerHTML = '<i class="fas fa-key"></i> Générer le Code Pair';
           submitBtn.classList.remove('hidden');
           inputGroup.classList.remove('hidden');
         } else {
@@ -410,7 +411,7 @@
         }
 
         // Clear displays
-        document.getElementById('codeDisplay').innerHTML = 'Your pair code will appear here';
+        document.getElementById('codeDisplay').innerHTML = 'Votre code pair apparaîtra ici';
         document.getElementById('qrDisplay').style.display = 'none';
         document.getElementById('codeDisplay').style.display = 'flex';
       });
@@ -434,12 +435,12 @@
           qrDisplay.style.display = 'block';
           codeDisplay.style.display = 'none';
         } else {
-          codeDisplay.innerHTML = '<div class="error-message"><i class="fas fa-exclamation-circle"></i> Failed to generate QR code</div>';
+          codeDisplay.innerHTML = '<div class="error-message"><i class="fas fa-exclamation-circle"></i> Échec de la génération du QR code</div>';
           codeDisplay.style.display = 'flex';
         }
       } catch (error) {
         console.error("Error generating QR code:", error);
-        codeDisplay.innerHTML = '<div class="error-message"><i class="fas fa-exclamation-circle"></i> Error generating QR code. Please try again.</div>';
+        codeDisplay.innerHTML = '<div class="error-message"><i class="fas fa-exclamation-circle"></i> Erreur de génération du QR code. Veuillez réessayer.</div>';
         codeDisplay.style.display = 'flex';
       } finally {
         loadingSpinner.style.display = "none";
@@ -456,7 +457,7 @@
 
       const mobileNumber = mobileNumberInput.value.trim();
       if (!mobileNumber) {
-        codeDisplay.innerHTML = '<div class="error-message"><i class="fas fa-exclamation-circle"></i> Please enter your WhatsApp number</div>';
+        codeDisplay.innerHTML = '<div class="error-message"><i class="fas fa-exclamation-circle"></i> Veuillez entrer votre numéro WhatsApp</div>';
         return;
       }
 
@@ -467,16 +468,16 @@
       try {
         const response = await axios(`/pair?number=${mobileNumber.replace(/[^0-9]/g, "")}`);
         
-        const code = response.data.code || "Service Unavailable";
-        if (code === "Service Unavailable") {
-          codeDisplay.innerHTML = '<div class="error-message"><i class="fas fa-exclamation-circle"></i> Service Unavailable</div>';
+        const code = response.data.code || "Service Indisponible";
+        if (code === "Service Indisponible") {
+          codeDisplay.innerHTML = '<div class="error-message"><i class="fas fa-exclamation-circle"></i> Service Indisponible</div>';
         } else {
           codeDisplay.innerHTML = `<div class="success-message"><i class="fas fa-check-circle"></i> CODE: ${code}</div>`;
         }
         codeDisplay.style.display = 'flex';
       } catch (error) {
         console.error("Error generating code:", error);
-        codeDisplay.innerHTML = '<div class="error-message"><i class="fas fa-exclamation-circle"></i> Error generating code. Please try again.</div>';
+        codeDisplay.innerHTML = '<div class="error-message"><i class="fas fa-exclamation-circle"></i> Erreur de génération du code. Veuillez réessayer.</div>';
         codeDisplay.style.display = 'flex';
       } finally {
         loadingSpinner.style.display = "none";
@@ -488,7 +489,7 @@
       navigator.clipboard.writeText(code).then(() => {
         const copyBtn = document.getElementById("copy");
         const originalText = copyBtn.innerHTML;
-        copyBtn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+        copyBtn.innerHTML = '<i class="fas fa-check"></i> Copié!';
         setTimeout(() => {
           copyBtn.innerHTML = originalText;
         }, 2000);

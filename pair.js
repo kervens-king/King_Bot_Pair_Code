@@ -14,37 +14,66 @@ function removeFile(FilePath) {
     try {
         if (!fs.existsSync(FilePath)) return false;
         fs.rmSync(FilePath, { recursive: true, force: true });
+        return true;
     } catch (e) {
         console.error('Error removing file:', e);
+        return false;
     }
 }
 
 router.get('/', async (req, res) => {
-    let num = req.query.number;
+    // Validation initiale de la requête
+    if (!req.query.number) {
+        return res.status(400).send({ code: 'Le paramètre "number" est requis.' });
+    }
+
+    let num = req.query.number.toString().trim();
     let dirs = './' + (num || `session`);
 
-    // Remove existing session if present
-    await removeFile(dirs);
-
-    // Clean the phone number - remove any non-digit characters
+    // Nettoyer le numéro de téléphone
     num = num.replace(/[^0-9]/g, '');
 
-    // Validate the phone number using awesome-phonenumber
+    // Validation du numéro de téléphone
+    if (num.length < 8) {
+        return res.status(400).send({ code: 'Numéro de téléphone trop court.' });
+    }
+
     const phone = pn('+' + num);
     if (!phone.isValid()) {
-        if (!res.headersSent) {
-            return res.status(400).send({ code: 'Numéro de téléphone invalide. Veuillez entrer votre numéro international complet (ex: 50942588377 pour Haïti) sans + ou espaces.' });
-        }
-        return;
+        return res.status(400).send({ code: 'Numéro de téléphone invalide. Veuillez entrer votre numéro international complet (ex: 50942588377 pour Haïti) sans + ou espaces.' });
     }
-    // Use the international number format (E.164, without '+')
+
+    // Formater le numéro
     num = phone.getNumber('e164').replace('+', '');
 
+    // Nettoyer l'ancienne session
+    await removeFile(dirs);
+
+    let sessionInitialized = false;
+    let responseSent = false;
+
+    function sendResponse(data) {
+        if (!responseSent) {
+            responseSent = true;
+            res.send(data);
+        }
+    }
+
+    function sendError(error) {
+        if (!responseSent) {
+            responseSent = true;
+            res.status(500).send({ code: error });
+        }
+    }
+
     async function initiateSession() {
-        const { state, saveCreds } = await useMultiFileAuthState(dirs);
+        if (sessionInitialized) return;
+        sessionInitialized = true;
 
         try {
-            const { version, isLatest } = await fetchLatestBaileysVersion();
+            const { state, saveCreds } = await useMultiFileAuthState(dirs);
+            const { version } = await fetchLatestBaileysVersion();
+
             let KingBot = makeWASocket({
                 version,
                 auth: {
@@ -63,6 +92,8 @@ router.get('/', async (req, res) => {
                 maxRetries: 5,
             });
 
+            KingBot.ev.on('creds.update', saveCreds);
+
             KingBot.ev.on('connection.update', async (update) => {
                 const { connection, lastDisconnect, isNewLogin, isOnline } = update;
 
@@ -71,10 +102,19 @@ router.get('/', async (req, res) => {
                     console.log("📱 Envoi de la session KING...");
                     
                     try {
-                        const sessionData = fs.readFileSync(dirs + '/creds.json');
+                        // Attendre que le fichier de session soit créé
+                        await delay(2000);
+                        
+                        const sessionPath = dirs + '/creds.json';
+                        if (!fs.existsSync(sessionPath)) {
+                            console.log("❌ Fichier de session non trouvé");
+                            return;
+                        }
 
-                        // Send session file to user
+                        const sessionData = fs.readFileSync(sessionPath);
                         const userJid = jidNormalizedUser(num + '@s.whatsapp.net');
+
+                        // Envoyer le fichier de session
                         await KingBot.sendMessage(userJid, {
                             document: sessionData,
                             mimetype: 'application/json',
@@ -82,14 +122,14 @@ router.get('/', async (req, res) => {
                         });
                         console.log("📄 Session KING envoyée avec succès");
 
-                        // Envoyer l'image KING avec caption
+                        // Envoyer l'image KING
                         await KingBot.sendMessage(userJid, {
                             image: { url: KING_IMAGE_URL },
                             caption: `👑 *KING DIVIN - Légende Divine* 👑\n\nVotre session a été connectée avec succès !\n\nRejoignez le royaume :\n📢 Canal: https://whatsapp.com/channel/0029Vb6KikfLdQefJursHm20\n👥 Groupe: https://chat.whatsapp.com/GIIGfaym8V7DZZElf6C3Qh\n\n« Au stade le plus tragique et plus belle » ✨`
                         });
                         console.log("👑 Image KING envoyée avec succès");
 
-                        // Message KING DIVIN formaté - TON MESSAGE ORIGINAL
+                        // Message KING DIVIN formaté
                         const KING_MD_TEXT = `
 
 ╭─✦─╮𝐊𝐈𝐍𝐆 𝐃𝐈𝐕𝐈𝐍 𝐒𝐄𝐒𝐒𝐈𝐎𝐍╭─✦─╮
@@ -130,18 +170,16 @@ router.get('/', async (req, res) => {
                         });
                         console.log("⚠️ Message d'avertissement envoyé");
 
-                        // Clean up session after use
+                        // Nettoyage final
                         console.log("🧹 Nettoyage de la session KING...");
                         await delay(1000);
                         removeFile(dirs);
                         console.log("✅ Session KING nettoyée avec succès");
                         console.log("🎉 Processus KING DIVIN terminé avec succès!");
-                        // Do not exit the process, just finish gracefully
+
                     } catch (error) {
                         console.error("❌ Erreur envoi messages KING:", error);
-                        // Still clean up session even if sending fails
                         removeFile(dirs);
-                        // Do not exit the process, just finish gracefully
                     }
                 }
 
@@ -155,48 +193,45 @@ router.get('/', async (req, res) => {
 
                 if (connection === 'close') {
                     const statusCode = lastDisconnect?.error?.output?.statusCode;
-
+                    console.log("🔌 Connexion fermée, code:", statusCode);
+                    
                     if (statusCode === 401) {
-                        console.log("❌ Déconnecté de WhatsApp. Génération d'un nouveau code pair.");
-                    } else {
-                        console.log("🔁 Connexion fermée — restarting...");
-                        initiateSession();
+                        console.log("❌ Déconnecté de WhatsApp.");
                     }
                 }
             });
 
-            // SEUL CHANGEMENT : Attendre AVANT de vérifier authState
+            // Attendre avant de vérifier l'état d'authentification
             await delay(3000);
 
             if (!KingBot.authState.creds.registered) {
-                num = num.replace(/[^\d+]/g, '');
-                if (num.startsWith('+')) num = num.substring(1);
-
                 try {
                     let code = await KingBot.requestPairingCode(num);
                     code = code?.match(/.{1,4}/g)?.join('-') || code;
-                    if (!res.headersSent) {
-                        console.log({ num, code });
-                        await res.send({ code });
-                    }
+                    console.log("📱 Code pair généré:", code);
+                    sendResponse({ code: code });
                 } catch (error) {
                     console.error('Error requesting pairing code:', error);
-                    if (!res.headersSent) {
-                        res.status(503).send({ code: 'Failed to get pairing code. Please check your phone number and try again.' });
-                    }
+                    sendError('Failed to get pairing code. Please check your phone number and try again.');
                 }
             }
 
-            KingBot.ev.on('creds.update', saveCreds);
         } catch (err) {
             console.error('Error initializing session:', err);
-            if (!res.headersSent) {
-                res.status(503).send({ code: 'Service Unavailable' });
-            }
+            sendError('Service Unavailable');
+            removeFile(dirs);
         }
     }
 
-    await initiateSession();
+    // Démarrer la session avec gestion d'erreur
+    try {
+        await initiateSession();
+    } catch (error) {
+        console.error('Error in main function:', error);
+        if (!responseSent) {
+            res.status(500).send({ code: 'Internal Server Error' });
+        }
+    }
 });
 
 // Global uncaught exception handler

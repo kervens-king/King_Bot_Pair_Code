@@ -1,0 +1,23 @@
+# render.yaml
+services:
+  - type: web
+    name: king-bot-pair
+    env: node
+    plan: free
+    region: ohio  # ou virginia, oregon selon ta région
+    buildCommand: |
+      npm install
+      echo "✅ Build complet - fichiers présents:"
+      ls -la
+      echo "🔍 Fichiers HTML:"
+      ls -la *.html || echo "Aucun fichier HTML trouvé"
+    startCommand: node index.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+    healthCheckPath: /health
+    autoDeploy: true
+    # FORCER L'INCLUSION DE TOUS LES FICHIERS
+    buildFilter:
+      paths:
+        - "**/*"  # Prend TOUS les fichiers

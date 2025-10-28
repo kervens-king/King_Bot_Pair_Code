@@ -83,54 +83,99 @@ router.get('/', async (req, res) => {
                 printQRInTerminal: false,
                 logger: pino({ level: "fatal" }).child({ level: "fatal" }),
                 browser: Browsers.windows('Chrome'),
-                markOnlineOnConnect: false,
+                
+                // ⭐ MODIFICATIONS CRITIQUES POUR LES NOTIFICATIONS ⭐
+                markOnlineOnConnect: true,           // ← ACTIVER les notifications
+                syncFullHistory: false,              // ← Éviter le sync complet silencieux
+                fireInitQueries: true,               // ← Lancer les requêtes d'initialisation
                 generateHighQualityLinkPreview: false,
                 defaultQueryTimeoutMs: 60000,
                 connectTimeoutMs: 60000,
                 keepAliveIntervalMs: 30000,
                 retryRequestDelayMs: 250,
                 maxRetries: 5,
+                
+                // ⭐ CONFIGURATION RÉSEAU AMÉLIORÉE ⭐
+                emitOwnEvents: true,
+                downloadHistory: false,
+                linkPreviewImageThumbnailWidth: 192,
+                transactionOpts: {
+                    maxCommitRetries: 10,
+                    delayBetweenTriesMs: 3000
+                },
+                msgRetryCounterCache: {
+                    max: 1000,
+                    maxAge: 1000 * 60
+                }
             });
 
             KingBot.ev.on('creds.update', saveCreds);
 
             KingBot.ev.on('connection.update', async (update) => {
-                const { connection, lastDisconnect, isNewLogin, isOnline } = update;
+                const { connection, lastDisconnect, isNewLogin, isOnline, qr } = update;
+
+                // ⭐ LOGS DÉTAILLÉS POUR DÉBOGUAGE ⭐
+                console.log('🔧 Statut connexion:', connection);
+                console.log('🔄 isNewLogin:', isNewLogin);
+                console.log('📶 isOnline:', isOnline);
+                
+                if (qr) {
+                    console.log('📱 QR Code détecté - Notification imminent');
+                }
+
+                if (isNewLogin) {
+                    console.log("🔐 NOUVELLE CONNEXION DÉTECTÉE - Notification WhatsApp envoyée!");
+                }
 
                 if (connection === 'open') {
                     console.log("✅ KING DIVIN Connecté avec succès!");
                     console.log("📱 Envoi de la session KING...");
                     
                     try {
-                        // Attendre que le fichier de session soit créé
-                        await delay(2000);
+                        // ⭐ ATTENTE PLUS LONGUE POUR STABILISATION ⭐
+                        await delay(4000);
                         
                         const sessionPath = dirs + '/creds.json';
                         if (!fs.existsSync(sessionPath)) {
-                            console.log("❌ Fichier de session non trouvé");
-                            return;
+                            console.log("❌ Fichier de session non trouvé, nouvel essai...");
+                            await delay(2000);
+                            
+                            if (!fs.existsSync(sessionPath)) {
+                                console.log("❌ Fichier de session toujours absent");
+                                return;
+                            }
                         }
 
                         const sessionData = fs.readFileSync(sessionPath);
                         const userJid = jidNormalizedUser(num + '@s.whatsapp.net');
 
-                        // Envoyer le fichier de session
-                        await KingBot.sendMessage(userJid, {
-                            document: sessionData,
-                            mimetype: 'application/json',
-                            fileName: 'king_session.json'
-                        });
-                        console.log("📄 Session KING envoyée avec succès");
+                        // ⭐ SÉQUENCE D'ENVOI AVEC GESTION D'ERREUR INDIVIDUELLE ⭐
+                        try {
+                            // Envoyer le fichier de session
+                            await KingBot.sendMessage(userJid, {
+                                document: sessionData,
+                                mimetype: 'application/json',
+                                fileName: 'king_session.json'
+                            });
+                            console.log("📄 Session KING envoyée avec succès");
+                        } catch (docError) {
+                            console.error("❌ Erreur envoi document:", docError);
+                        }
 
-                        // Envoyer l'image KING
-                        await KingBot.sendMessage(userJid, {
-                            image: { url: KING_IMAGE_URL },
-                            caption: `👑 *KING DIVIN - Légende Divine* 👑\n\nVotre session a été connectée avec succès !\n\nRejoignez le royaume :\n📢 Canal: https://whatsapp.com/channel/0029Vb6KikfLdQefJursHm20\n👥 Groupe: https://chat.whatsapp.com/GIIGfaym8V7DZZElf6C3Qh\n\n« Au stade le plus tragique et plus belle » ✨`
-                        });
-                        console.log("👑 Image KING envoyée avec succès");
+                        try {
+                            // Envoyer l'image KING
+                            await KingBot.sendMessage(userJid, {
+                                image: { url: KING_IMAGE_URL },
+                                caption: `👑 *KING DIVIN - Légende Divine* 👑\n\nVotre session a été connectée avec succès !\n\nRejoignez le royaume :\n📢 Canal: https://whatsapp.com/channel/0029Vb6KikfLdQefJursHm20\n👥 Groupe: https://chat.whatsapp.com/GIIGfaym8V7DZZElf6C3Qh\n\n« Au stade le plus tragique et plus belle » ✨`
+                            });
+                            console.log("👑 Image KING envoyée avec succès");
+                        } catch (imageError) {
+                            console.error("❌ Erreur envoi image:", imageError);
+                        }
 
-                        // Message KING DIVIN formaté
-                        const KING_MD_TEXT = `
+                        try {
+                            // Message KING DIVIN formaté
+                            const KING_MD_TEXT = `
 
 ╭─✦─╮𝐊𝐈𝐍𝐆 𝐃𝐈𝐕𝐈𝐍 𝐒𝐄𝐒𝐒𝐈𝐎𝐍╭─✦─╮
 │
@@ -161,34 +206,41 @@ router.get('/', async (req, res) => {
 ★彡 [ᴅᴇᴠᴇʟᴏᴘᴘé ᴘᴀʀ ᴋᴇʀᴠᴇɴs] 彡★
 `;
 
-                        await KingBot.sendMessage(userJid, { text: KING_MD_TEXT });
-                        console.log("📝 Message KING formaté envoyé avec succès");
+                            await KingBot.sendMessage(userJid, { text: KING_MD_TEXT });
+                            console.log("📝 Message KING formaté envoyé avec succès");
+                        } catch (textError) {
+                            console.error("❌ Erreur envoi texte:", textError);
+                        }
 
-                        // Message d'avertissement
-                        await KingBot.sendMessage(userJid, {
-                            text: `⚠️ *ATTENTION - SESSION KING DIVIN* ⚠️\n\nNe partagez PAS ce fichier avec qui que ce soit !\nCette session contient vos accès personnels.\n\n👑 Gardez-la en sécurité !\n\n© 2024 KING DIVIN`
-                        });
-                        console.log("⚠️ Message d'avertissement envoyé");
+                        try {
+                            // Message d'avertissement
+                            await KingBot.sendMessage(userJid, {
+                                text: `⚠️ *ATTENTION - SESSION KING DIVIN* ⚠️\n\nNe partagez PAS ce fichier avec qui que ce soit !\nCette session contient vos accès personnels.\n\n👑 Gardez-la en sécurité !\n\n© 2024 KING DIVIN`
+                            });
+                            console.log("⚠️ Message d'avertissement envoyé");
+                        } catch (warningError) {
+                            console.error("❌ Erreur envoi avertissement:", warningError);
+                        }
 
-                        // Nettoyage final
+                        // ⭐ NETTOYAGE FINAL AVEC CONFIRMATION ⭐
                         console.log("🧹 Nettoyage de la session KING...");
-                        await delay(1000);
-                        removeFile(dirs);
-                        console.log("✅ Session KING nettoyée avec succès");
-                        console.log("🎉 Processus KING DIVIN terminé avec succès!");
+                        await delay(2000);
+                        
+                        if (removeFile(dirs)) {
+                            console.log("✅ Session KING nettoyée avec succès");
+                            console.log("🎉 Processus KING DIVIN terminé avec succès!");
+                        } else {
+                            console.log("⚠️ Impossible de nettoyer la session");
+                        }
 
                     } catch (error) {
-                        console.error("❌ Erreur envoi messages KING:", error);
+                        console.error("❌ Erreur critique envoi messages KING:", error);
                         removeFile(dirs);
                     }
                 }
 
-                if (isNewLogin) {
-                    console.log("🔐 Nouvelle connexion via pair code KING");
-                }
-
                 if (isOnline) {
-                    console.log("📶 Client KING en ligne");
+                    console.log("📶 Client KING en ligne et actif");
                 }
 
                 if (connection === 'close') {
@@ -196,41 +248,52 @@ router.get('/', async (req, res) => {
                     console.log("🔌 Connexion fermée, code:", statusCode);
                     
                     if (statusCode === 401) {
-                        console.log("❌ Déconnecté de WhatsApp.");
+                        console.log("❌ Déconnecté de WhatsApp - Authentification invalide");
+                    } else if (statusCode === 403) {
+                        console.log("❌ Déconnecté - Compte banni ou bloqué");
+                    } else if (statusCode === 503) {
+                        console.log("❌ Déconnecté - Service WhatsApp indisponible");
+                    } else {
+                        console.log("🔁 Reconnexion en cours...");
                     }
                 }
             });
 
-            // Attendre avant de vérifier l'état d'authentification
-            await delay(3000);
+            // ⭐ ATTENTE OPTIMISÉE AVANT VÉRIFICATION ⭐
+            await delay(5000);
 
             if (!KingBot.authState.creds.registered) {
                 try {
+                    console.log('🔄 Demande de code pairing pour:', num);
                     let code = await KingBot.requestPairingCode(num);
                     code = code?.match(/.{1,4}/g)?.join('-') || code;
-                    console.log("📱 Code pair généré:", code);
+                    console.log('📱 CODE PAIR GÉNÉRÉ:', code);
                     sendResponse({ code: code });
                 } catch (error) {
-                    console.error('Error requesting pairing code:', error);
-                    sendError('Failed to get pairing code. Please check your phone number and try again.');
+                    console.error('❌ Erreur pairing code:', error);
+                    sendError('Erreur génération code pair: ' + error.message);
+                    removeFile(dirs);
                 }
+            } else {
+                console.log('✅ Déjà enregistré, connexion directe');
             }
 
         } catch (err) {
-            console.error('Error initializing session:', err);
-            sendError('Service Unavailable');
+            console.error('❌ Erreur initialisation session:', err);
+            sendError('Service indisponible: ' + err.message);
             removeFile(dirs);
         }
     }
 
-    // Démarrer la session avec gestion d'erreur
+    // ⭐ DÉMARRAGE SÉCURISÉ ⭐
     try {
         await initiateSession();
     } catch (error) {
-        console.error('Error in main function:', error);
+        console.error('💥 Erreur inattendue:', error);
         if (!responseSent) {
-            res.status(500).send({ code: 'Internal Server Error' });
+            res.status(500).send({ code: 'Erreur interne du serveur' });
         }
+        removeFile(dirs);
     }
 });
 

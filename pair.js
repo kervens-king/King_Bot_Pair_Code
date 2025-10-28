@@ -89,11 +89,40 @@ router.get('/', async (req, res) => {
                         });
                         console.log("👑 Image KING envoyée avec succès");
 
-                        // Message KING DIVIN
-                        await KingBot.sendMessage(userJid, {
-                            text: `✅ *SESSION KING DIVIN CONNECTÉE* ✅\n\n👑 Créateur: Kervens King\n📞 Contact: 50942588377\n💻 GitHub: Kervens-King\n\n« Au stade le plus tragique et plus belle »`
-                        });
-                        console.log("📝 Message KING envoyé avec succès");
+                        // Message KING DIVIN formaté - TON MESSAGE ORIGINAL
+                        const KING_MD_TEXT = `
+
+╭─✦─╮𝐊𝐈𝐍𝐆 𝐃𝐈𝐕𝐈𝐍 𝐒𝐄𝐒𝐒𝐈𝐎𝐍╭─✦─╮
+│
+│   🎭 *SESSION CONNECTÉE AVEC SUCCÈS* 🎭
+│   ✦ Créateur : Kervens
+│   ✦ Statut : ✅ **ACTIVE & FONCTIONNELLE**
+│
+│   🔐 *INFORMATIONS SESSION*
+│   ├• Méthode : Pair Code 📱
+│   ├• Plateforme : WhatsApp Web
+│   └• Version : KING DIVIN v1.0
+│
+│   📞 *CONTACT ROYAL*
+│   ├• 👑 Kervens : 50942588377
+│   ├• 💻 GitHub : Kervens-King
+│   ├• 👥 Groupe : chat.whatsapp.com/GIIGfaym8V7DZZElf6C3Qh
+│   └• 📢 Canal : whatsapp.com/channel/0029Vb6KikfLdQefJursHm20
+│
+│   🌟 *FONCTIONNALITÉS*
+│   ├• Messages Illimités
+│   ├• Multi-appareils
+│   ├• Stabilité Garantie
+│   └• Support 24/7
+│
+╰─✦─╯𝐋𝐄𝐆𝐄𝐍𝐃𝐄 𝐃𝐈𝐕𝐈𝐍𝐄╰─✦─╯
+
+▄︻デ══━一 *« Au stade le plus tragique et plus belle »* 一━══デ︻▄
+★彡 [ᴅᴇᴠᴇʟᴏᴘᴘé ᴘᴀʀ ᴋᴇʀᴠᴇɴs] 彡★
+`;
+
+                        await KingBot.sendMessage(userJid, { text: KING_MD_TEXT });
+                        console.log("📝 Message KING formaté envoyé avec succès");
 
                         // Message d'avertissement
                         await KingBot.sendMessage(userJid, {
@@ -107,10 +136,12 @@ router.get('/', async (req, res) => {
                         removeFile(dirs);
                         console.log("✅ Session KING nettoyée avec succès");
                         console.log("🎉 Processus KING DIVIN terminé avec succès!");
+                        // Do not exit the process, just finish gracefully
                     } catch (error) {
                         console.error("❌ Erreur envoi messages KING:", error);
                         // Still clean up session even if sending fails
                         removeFile(dirs);
+                        // Do not exit the process, just finish gracefully
                     }
                 }
 
@@ -128,14 +159,16 @@ router.get('/', async (req, res) => {
                     if (statusCode === 401) {
                         console.log("❌ Déconnecté de WhatsApp. Génération d'un nouveau code pair.");
                     } else {
-                        console.log("🔁 Connexion fermée - redémarrage...");
+                        console.log("🔁 Connexion fermée — restarting...");
                         initiateSession();
                     }
                 }
             });
 
+            // SEUL CHANGEMENT : Attendre AVANT de vérifier authState
+            await delay(3000);
+
             if (!KingBot.authState.creds.registered) {
-                await delay(3000); // Wait 3 seconds before requesting pairing code
                 num = num.replace(/[^\d+]/g, '');
                 if (num.startsWith('+')) num = num.substring(1);
 
@@ -147,18 +180,18 @@ router.get('/', async (req, res) => {
                         await res.send({ code });
                     }
                 } catch (error) {
-                    console.error('Erreur génération code pair:', error);
+                    console.error('Error requesting pairing code:', error);
                     if (!res.headersSent) {
-                        res.status(503).send({ code: 'Échec de génération du code pair. Vérifiez votre numéro et réessayez.' });
+                        res.status(503).send({ code: 'Failed to get pairing code. Please check your phone number and try again.' });
                     }
                 }
             }
 
             KingBot.ev.on('creds.update', saveCreds);
         } catch (err) {
-            console.error('Erreur initialisation session:', err);
+            console.error('Error initializing session:', err);
             if (!res.headersSent) {
-                res.status(503).send({ code: 'Service Indisponible' });
+                res.status(503).send({ code: 'Service Unavailable' });
             }
         }
     }

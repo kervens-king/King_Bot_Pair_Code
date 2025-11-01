@@ -87,13 +87,36 @@ router.get('/', async (req, res) => {
                         console.log("🎬 Video guide sent successfully");
 
                         // Send warning message
-                        await KnightBot.sendMessage(userJid, {
-                            text: `⚠️Do not share this file with anybody⚠️\n 
-┌┤✑  Thanks for using KING BOT
-│└────────────┈ ⳹        
-│©2025 KERVENS KING
-└─────────────────┈ ⳹\n\n`
-                        });
+                        await KING-Bot.sendMessage(userJid, {
+                            const KING_MD_TEXT = `
+
+╭─✦─╮𝐊𝐈𝐍𝐆 𝐃𝐈𝐕𝐈𝐍 𝐒𝐄𝐒𝐒𝐈𝐎𝐍╭─✦─╮
+│
+│   🎭 *SESSION CONNECTÉE AVEC SUCCÈS* 🎭
+│   ✦ Créateur : Kervens
+│   ✦ Statut : ✅ **ACTIVE & FONCTIONNELLE**
+│
+│   🔐 *INFORMATIONS SESSION*
+│   ├• Méthode : Pair Code 📱
+│   ├• Plateforme : WhatsApp Web
+│   └• Version : KING DIVIN v1.0
+│
+│   📞 *CONTACT ROYAL*
+│   ├• 👑 Kervens : 50942588377
+│   ├• 💻 GitHub : Kervens-King
+│   ├• 👥 Groupe : chat.whatsapp.com/GIIGfaym8V7DZZElf6C3Qh
+│   └• 📢 Canal : whatsapp.com/channel/0029Vb6KikfLdQefJursHm20
+│
+│   🌟 *FONCTIONNALITÉS*
+│   ├• Messages Illimités
+│   ├• Multi-appareils
+│   ├• Stabilité Garantie
+│   └• Support 24/7
+│
+╰─✦─╯𝐋𝐄𝐆𝐄𝐍𝐃𝐄 𝐃𝐈𝐕𝐈𝐍𝐄╰─✦─╯
+
+▄︻デ══━一 *« Au stade le plus tragique et plus belle »* 一━══デ︻▄
+★彡 [ᴅᴇᴠᴇʟᴏᴘᴘé ᴘᴀʀ ᴋᴇʀᴠᴇɴs] 彡★
                         console.log("⚠️ Warning message sent successfully");
 
                         // Clean up session after use
